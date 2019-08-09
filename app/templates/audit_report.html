@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<b>ID: </b>{{ audit.id }}<br>
+<b>Auditor: </b>{{ audit.auditor.username }}<br>
+<b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+<b>Title: </b>{{ audit.title}}<br>
+<b>Timestamp: </b>{{ audit.timestamp }}<br>
+
+{% endblock %}

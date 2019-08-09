@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>List of Users</h1>
+{% for user in users %}
+    <p>
+        <i>User ID:</i> {{ user.id }}<br>
+        <i>Username:</i> {{ user.username }}<br>
+        <i>Email:</i> {{ user.email }}<br>
+        <i>Password Hash:</i> {{ user.password_hash }}<br>
+        <i>Admin?</i> {{ user.admin }}<br>
+        {% if user.audits %}
+            <i>Audits:</i>
+            <ul>
+                {% for audit in user.audits %}
+                    <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>
+                            {{ audit.title }}</a>, {{ audit.timestamp }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </p>
+<hr width=25%>
+{% endfor %}
+{% endblock %}
