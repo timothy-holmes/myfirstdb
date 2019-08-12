@@ -22,6 +22,8 @@ itsdangerous
 Jinja2
 Mako
 MarkupSafe
+numpy
+pandas
 PyJWT
 python-dateutil
 python-dotenv

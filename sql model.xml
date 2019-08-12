@@ -37,7 +37,7 @@
 		<type label="SET" length="1" sql="SET" quote=""/>
 		<type label="Bit" length="0" sql="bit" quote=""/>
 	</group>
-</datatypes><table x="10" y="10" name="user">
+</datatypes><table x="15" y="123" name="user">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -58,25 +58,25 @@
 <part>id</part>
 </key>
 </table>
-<table x="300" y="10" name="audit">
+<table x="192" y="47" name="audit">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
-<default>NULL</default></row>
-<row name="title" null="1" autoincrement="0">
-<datatype>VARCHAR(120)</datatype>
-<default>NULL</default></row>
-<row name="timestamp" null="1" autoincrement="0">
-<datatype>DATETIME</datatype>
 <default>NULL</default></row>
 <row name="user_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="user" row="id" />
 </row>
+<row name="title" null="1" autoincrement="0">
+<datatype>VARCHAR(120)</datatype>
+<default>NULL</default></row>
+<row name="create_timestamp" null="1" autoincrement="0">
+<datatype>DATETIME</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
 </table>
-<table x="300" y="130" name="usergroup">
+<table x="198" y="192" name="usergroup">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -90,7 +90,47 @@
 <part>id</part>
 </key>
 </table>
-<table x="300" y="230" name="vehicle">
+<table x="668" y="431" name="vehicle">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="rego" null="1" autoincrement="0">
+<datatype>VARCHAR(13)</datatype>
+<default>NULL</default></row>
+<row name="VIN" null="1" autoincrement="0">
+<datatype>VARCHAR(17)</datatype>
+<default>NULL</default></row>
+<row name="model_code" null="1" autoincrement="0">
+<datatype>VARCHAR(32)</datatype>
+<default>NULL</default></row>
+<row name="production_month" null="1" autoincrement="0">
+<datatype>DATE</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="247" y="365" name="dealer">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="code" null="1" autoincrement="0">
+<datatype>BIGINT</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(255)</datatype>
+<default>NULL</default></row>
+<row name="region" null="1" autoincrement="0">
+<datatype>VARCHAR(3)</datatype>
+<default>NULL</default></row>
+<row name="size" null="1" autoincrement="0">
+<datatype>VARCHAR(2)</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="59" y="417" name="warranty_claim">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -98,7 +138,73 @@
 <part>id</part>
 </key>
 </table>
-<table x="300" y="300" name="dealer">
+<table x="395" y="193" name="sales_claim">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="audit_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="audit" row="id" />
+</row>
+<row name="vehicle_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="vehicle" row="id" />
+</row>
+<row name="dealer_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="dealer" row="id" />
+</row>
+<row name="suo" null="1" autoincrement="0">
+<datatype>VARCHAR(8)</datatype>
+<default>NULL</default></row>
+<row name="sales_type_id_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="sales_type_id" row="id" />
+</row>
+<row name="list_price" null="1" autoincrement="0">
+<datatype>DECIMAL</datatype>
+<default>NULL</default></row>
+<row name="ow_date" null="1" autoincrement="0">
+<datatype>DATE</datatype>
+<default>NULL</default></row>
+<row name="ow_customer" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="retail_date" null="1" autoincrement="0">
+<datatype>DATE</datatype>
+<default>NULL</default></row>
+<row name="onsell_date" null="1" autoincrement="0">
+<datatype>DATE</datatype>
+<default>NULL</default></row>
+<row name="customer_name" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="fleet_name" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="fleet_rego" null="1" autoincrement="0">
+<datatype>VARCHAR</datatype>
+<default>NULL</default></row>
+<row name="sfa_number" null="1" autoincrement="0">
+<datatype>VARCHAR(128)</datatype>
+<default>NULL</default></row>
+<row name="sfa_discount" null="1" autoincrement="0">
+<datatype>DECIMAL</datatype>
+<default>NULL</default></row>
+<row name="sfa_amount" null="1" autoincrement="0">
+<datatype>DECIMAL</datatype>
+<default>NULL</default></row>
+<row name="claim_amount" null="1" autoincrement="0">
+<datatype>DECIMAL</datatype>
+<default>NULL</default></row>
+<row name="audit_result_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="86" y="607" name="part">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -106,24 +212,26 @@
 <part>id</part>
 </key>
 </table>
-<table x="300" y="360" name="warranty_claim">
+<table x="578" y="617" name="sales_type_id">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
+<row name="code" null="1" autoincrement="0">
+<datatype>VARCHAR(3)</datatype>
+<default>NULL</default></row>
+<row name="sales_type_description_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="sales_type_description" row="id" />
+</row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
 </table>
-<table x="300" y="420" name="sales_claim">
+<table x="823" y="681" name="sales_type_description">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<key type="PRIMARY" name="">
-<part>id</part>
-</key>
-</table>
-<table x="300" y="480" name="part">
-<row name="id" null="1" autoincrement="1">
+<row name="description" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
