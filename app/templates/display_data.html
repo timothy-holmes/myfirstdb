@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Uploaded Data</h1>
+    {{ audit.created_timestamp }} <br><br>
+    {% for order in audit.orders %}
+        {{ order.suo }}, {{ order.ow_customer }}
+        <ul>
+        {% for item in order.items %}
+            <li>{{ item.description }}: {{ item.amount }}</li>
+        {% endfor %}
+        </ul>
+        <br>
+    {% endfor %}
+{% endblock %}

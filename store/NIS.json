@@ -1,0 +1,21 @@
+{
+    "sales_order": {
+        "suo": "SUO",
+        "list_price": "List Price",
+        "ow_date": "OW Date",
+        "ow_customer": "OW Customer",
+        "retail_date": "Retail Date",
+        "onsell_date": "Demo/CC Onsell Date",
+        "customer_name": "Retail Customer Name",
+        "fleet_name": "Fleet Customer Name",
+        "fleet_rego": "Fleet Registration Number",
+        "sfa_discount": "Special Assistance Discount",
+        "sfa_amount": "Special Assistance Amount",
+        "delivery_fee": "Dealer Delivery Fee"
+        },
+    "sales_item": {
+        "description": "Campaign Description",
+        "amount": "Claim Amount"
+        }
+}
+

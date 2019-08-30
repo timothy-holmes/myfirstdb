@@ -9,17 +9,18 @@
 <b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
 
 {% if audit.orders %}<h2>Orders:</h2>
-    {% for order in audit.orders %}
-        {{ order.suo }}, {{ order.ow_customer }}
+    {% if prev_url %}<a href={{ prev_url }}>Previous</a> | {% endif %}{% if next_url %}<a href={{ next_url }}>Next</a>{% endif %}
+    {% for o in order %}
+        <h3>{{ o.suo }}, {{ o.ow_customer }}</h3>
         <ul>
-        {% for item in order.items %}
+        {% for item in o.items %}
             <li>{{ item.description }}: {{ item.amount }}</li>
         {% endfor %}
         </ul>
         <br>
     {% endfor %}
 {% else %}
-    <i>No data imported for this audit. <a href={{ url_for('import_data',audit_id=audit.id) }}>Import data?</i>
+    <i>No data imported for this audit</i>
 {% endif %}
 
 {% endblock %}

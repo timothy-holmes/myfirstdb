@@ -33,24 +33,66 @@ class Brand(db.Model):
         
 class Audit(db.Model):
     __tablename__ = 'audit'
-    
     id = db.Column(db.Integer, primary_key=True)
-    timestamp_created = db.Column(db.DateTime, index=True)
+    timestamp_created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    dealer_id = db.Column(db.Integer, db.ForeignKey('dealer.id'))
     brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
-    orders = db.relationship('SalesOrder', backref='audit', lazy='select', order_by='SalesOrder.suo')
-    files = db.relationship('UploadedFile', backref='audit', lazy='select', order_by='UploadedFile.timestamp_created')
-    
-    def __init__(self):
-        self.timestamp_created = datetime.utcnow()
+    orders = db.relationship('SalesOrder', backref='audit', lazy='select')
     
     def __repr__(self):
-        return '<Audit: {} {}>'.format(self.brand_id, self.timestamp_created)
-       
+        return '<Audit: {} {}>'.format(self.dealer_id, self.timestamp_created)
+        
+class SalesType(db.Model):
+    __tablename__ = 'sales_type'
+    id = db.Column(db.Integer, autoincrement=True)
+    code = db.Column(db.String(2), primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('sales_type_group.id'))
+    orders = db.relationship('SalesOrder',lazy='select')
+    
+    def __repr__(self):
+        return '<Sales Type: {}>'.format(self.code)
+    
+class SalesTypeGroup(db.Model):
+    __tablename__ = 'sales_type_group'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    parent = db.relationship('SalesType',lazy='select')
+    
+    def __repr__(self):
+        return '<Sales Type Group: {}>'.format(self.code) 
+
+class Vehicle(db.Model):
+    __tablename__ = 'vehicle'
+    id = db.Column(db.Integer, primary_key=True)
+    rego = db.Column(db.String(10))
+    vin = db.Column(db.String(17))
+    model_code = db.Column(db.String(32))
+    production_month = db.Column
+    orders = db.relationship('SalesOrder',lazy='select')
+    
+    def __repr__(self):
+        return '<Vehicle rego: {}, VIN: {}>'.format(self.rego, self.vin)
+        
+class Dealer(db.Model):
+    __tablename__ = 'dealer'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(30), unique=True)
+    name = db.Column(db.String(250), unique=True)
+    region = db.Column(db.String(4))
+    size = db.Column(db.String(2))
+    
+    audits = db.relationship('Audit', backref='dealer', lazy='select')
+    
+    def __repr__(self):
+        return '<Dealer: {}>'.format(self.name)        
+        
 class SalesOrder(db.Model):
     __tablename__ = 'sales_order'
     id = db.Column(db.Integer, primary_key=True)
     audit_id = db.Column(db.Integer, db.ForeignKey('audit.id'))
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
+    sales_type = db.Column(db.String(2), db.ForeignKey('sales_type.code'))
     suo = db.Column(db.String(8))
     list_price = db.Column(db.Float)
     ow_date = db.Column(db.Date)
@@ -63,7 +105,7 @@ class SalesOrder(db.Model):
     sfa_discount = db.Column(db.Float)
     sfa_amount= db.Column(db.Float)
     delivery_fee = db.Column(db.Float)
-    items = db.relationship('SalesItem', backref='order', lazy='select', order_by='SalesItem.amount.desc()')
+    items = db.relationship('SalesItem', backref='order', lazy='select')
     
     def __repr__(self):
         return '<SalesOrder SUO: {}>'.format(self.suo)
@@ -77,21 +119,7 @@ class SalesItem(db.Model):
     
     def __repr__(self):
         return '<SalesItem: {}>'.format(self.id)
-        
-class UploadedFile(db.Model):
-    __tablename__ = 'uploaded_files'
-    id = db.Column(db.Integer, primary_key=True)
-    filename_stored = db.Column(db.String(255))
-    checksum = db.Column(db.String(512))
-    timestamp_created = db.Column(db.DateTime, index=True)
-    audit_id = db.Column(db.Integer, db.ForeignKey('audit.id'))
-    
-    def __init__(self,filename_stored,checksum,audit_id):
-        self.timestamp_created = datetime.utcnow()
-        self.filename_stored = filename_stored
-        self.checksum = checksum
-        self.audit_id = audit_id
-        
+  
 @login.user_loader
 def load_user(id):
-    return db.session.query(User).get(int(id))
+    return User.query.get(int(id))

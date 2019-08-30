@@ -14,7 +14,7 @@
             <ul>
                 {% for audit in user.audits %}
                     <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>
-                            {{ audit.title }}</a>, {{ audit.timestamp }}</li>
+                            {{ audit.id }}, {{ audit.timestamp_created }}, {{ audit.brand_id }}</a></li>
                 {% endfor %}
             </ul>
         {% endif %}
