@@ -1,26 +1,39 @@
 {% extends "base.html" %}
 
-{% block content %}
-
-<b>ID: </b>{{ audit.id }}<br>
-<b>Auditor: </b>{{ audit.auditor.username }}<br>
-<b>Auditor Email: </b>{{ audit.auditor.email }}<br>
-<b>Brand: </b>{{ audit.brand.name}}<br>
-<b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
-
-{% if audit.orders %}<h2>Orders:</h2>
-    {% if prev_url %}<a href={{ prev_url }}>Previous</a> | {% endif %}{% if next_url %}<a href={{ next_url }}>Next</a>{% endif %}
-    {% for o in order %}
-        <h3>{{ o.suo }}, {{ o.ow_customer }}</h3>
-        <ul>
-        {% for item in o.items %}
-            <li>{{ item.description }}: {{ item.amount }}</li>
+{% block app_content %}
+    <!-- audit_report_by_order.html -->
+    <b>ID: </b>{{ audit.id }}<br>
+    <b>Auditor: </b>{{ audit.auditor.username }}<br>
+    <b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+    <b>Brand: </b>{{ audit.brand.name}}<br>
+    <b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
+    
+    {%- if audit.orders %}
+        {%- for o in order %}
+            <div class="order-box-container">
+                <h2>Sales Details</h2>
+                <b>SUO:</b> {{ o.suo }}<br>
+                <b>List Price:</b> {{ o.list_price }}<br>
+                <b>OW Date:</b> {{ o.ow_date }}<br>
+                <b>OW Customer:</b> {{ o.ow_customer }}<br>
+            </div>
+            <div class="vehicle-box-container">
+                <h2>Vehicle Details</h2>
+                <i>No details yet</i>
+            </div>            
+            <div class="items-box-container">
+                <h2>Incentive Details</h2>
+                {% for item in o.items %}
+                    <b>{{ item.description }}:</b> {{ item.amount }}<br>
+                {% endfor %}
+            </div>
+            <br>
         {% endfor %}
-        </ul>
-        <br>
-    {% endfor %}
-{% else %}
-    <i>No data imported for this audit</i>
-{% endif %}
+    {% else %}
+        <i>No data imported for this audit</i>
+    {% endif %}
+    
+    {%- if prev_url %}<a href={{ prev_url }}>Previous Order</a> | {% endif %}
+    {%- if next_url %}<a href={{ next_url }}>Next Order</a>{%- endif %}
 
 {% endblock %}

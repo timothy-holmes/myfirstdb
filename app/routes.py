@@ -29,6 +29,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.query(User).filter_by(username=form.username.data).first()
+        print(user,flush=True)
+        print(form.password.data,flush=True)
+        print(user.check_password(form.password.data))
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -79,12 +82,9 @@ def audit_report(audit_id):
     audit = Audit.query.filter_by(id=int(audit_id)).first()
     return render_template('audit_report.html', title='Audit {}'.format(audit_id), audit=audit)
 
-@app.route('/audit/<audit_id>/order')
-def audit_report_by_order_none(audit_id):   
-    return redirect(url_for('audit_report_by_order', audit_id=audit_id, page_num=1))
-    
+@app.route('/audit/<audit_id>/order')    
 @app.route('/audit/<audit_id>/order/<page_num>')
-def audit_report_by_order(audit_id,page_num):
+def audit_report_by_order(audit_id,page_num=1):
     audit = Audit.query.filter_by(id=int(audit_id)).first()
     order = SalesOrder.query.filter_by(audit_id=audit.id).order_by(SalesOrder.suo).paginate(page=int(page_num),per_page=1,error_out=True)
     next_url = url_for('audit_report_by_order', audit_id=audit_id, page_num=order.next_num) if order.has_next else None

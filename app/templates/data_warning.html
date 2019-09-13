@@ -1,31 +1,29 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block app_content %}
+    <b>ID: </b>{{ audit.id }}<br>
+    <b>Auditor: </b>{{ audit.auditor.username }}<br>
+    <b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+    <b>Brand: </b>{{ audit.brand.name}}<br>
+    <b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
 
-<b>ID: </b>{{ audit.id }}<br>
-<b>Auditor: </b>{{ audit.auditor.username }}<br>
-<b>Auditor Email: </b>{{ audit.auditor.email }}<br>
-<b>Brand: </b>{{ audit.brand.name}}<br>
-<b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
-
-<font color="red">
-{% if duplicates %}
-    <h3>Data already imported.</h3><br>
-    {% for duplicate in duplicates %}
-        Conflicting upload:<br>
-        <ul>        
-            <li><i>Filename</i> {{ duplicate.filename_original }}</li>
-            <li><i>Upload Timestamp</i> {{ duplicate.timestamp_created }}</li>
-            <li><i>Audit ID</i> {{ duplicate.audit_id }}</li>
-            <li><i>Audit Timestamp</i> {{ duplicate.audit.timestamp_created }}</li>            
-            <li><i>Brand Name</i> {{ duplicate.audit.brand.name }}</li>
-        </ul>
-    {% endfor %}        
-{% else %}
-    <i>ERROR: No duplicates found</i>
-{% endif %}
-</font>
-<br><br>
-<a href={{ proceed_url }}>Accept and proceed</a>
-
+    <font color="red">
+    {% if duplicates %}
+        <h3>Data already imported.</h3><br>
+        {% for duplicate in duplicates %}
+            Conflicting upload:<br>
+            <ul>        
+                <li><i>Filename</i> {{ duplicate.filename_original }}</li>
+                <li><i>Upload Timestamp</i> {{ duplicate.timestamp_created }}</li>
+                <li><i>Audit ID</i> {{ duplicate.audit_id }}</li>
+                <li><i>Audit Timestamp</i> {{ duplicate.audit.timestamp_created }}</li>            
+                <li><i>Brand Name</i> {{ duplicate.audit.brand.name }}</li>
+            </ul>
+        {% endfor %}        
+    {% else %}
+        <i>ERROR: No duplicates found</i>
+    {% endif %}
+    </font>
+    <br><br>
+    <a href={{ proceed_url }}>Accept and proceed</a>
 {% endblock %}

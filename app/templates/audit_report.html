@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block app_content %}
+    <!-- audit_report.html -->
+    <b>ID: </b>{{ audit.id }}<br>
+    <b>Auditor: </b>{{ audit.auditor.username }}<br>
+    <b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+    <b>Brand: </b>{{ audit.brand.name}}<br>
+    <b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
 
-<b>ID: </b>{{ audit.id }}<br>
-<b>Auditor: </b>{{ audit.auditor.username }}<br>
-<b>Auditor Email: </b>{{ audit.auditor.email }}<br>
-<b>Brand: </b>{{ audit.brand.name}}<br>
-<b>Timestamp: </b>{{ audit.timestamp_created }}<br><br>
-
-{% if audit.orders %}<h2>Orders:</h2>
-    {% for order in audit.orders %}
-        {{ order.suo }}, {{ order.ow_customer }}
-        <ul>
-        {% for item in order.items %}
-            <li>{{ item.description }}: {{ item.amount }}</li>
+    {% if audit.orders %}<h2>Orders:</h2>
+        {% for order in audit.orders %}
+            {{ order.suo }}, {{ order.ow_customer }}
+            <ul>
+            {% for item in order.items %}
+                <li>{{ item.description }}: {{ item.amount }}</li>
+            {% endfor %}
+            </ul>
+            <br>
         {% endfor %}
-        </ul>
-        <br>
-    {% endfor %}
-{% else %}
-    <i>No data imported for this audit. <a href={{ url_for('import_data',audit_id=audit.id) }}>Import data?</i>
-{% endif %}
-
+    {% else %}
+        <i>No data imported for this audit. <a href={{ url_for('import_data',audit_id=audit.id) }}>Import data?</i>
+    {% endif %}
 {% endblock %}

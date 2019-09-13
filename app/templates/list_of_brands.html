@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h1>{{ title }}</h1>
-{% for brand in brands %}
-    <p>
-        <i>Brand ID:</i> {{ brand.id }}<br>
-        <i>Name:</i> {{ brand.name }}<br>
-        <i>Code:</i> {{ brand.code }}<br>
-        {% if brand.audits %}
-            <i>Audits:</i>
-            <ul>
-                {% for audit in brand.audits %}
-                    <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>
-                            {{ audit.title }}</a>, {{ audit.timestamp }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </p>
-<hr width=25%>
-{% endfor %}
+{% block app_content %}
+    <h1>{{ title }}</h1>
+    {% for brand in brands %}
+        <p>
+            <i>Brand ID:</i> {{ brand.id }}<br>
+            <i>Name:</i> {{ brand.name }}<br>
+            <i>Code:</i> {{ brand.code }}<br>
+            {% if brand.audits %}
+                <i>Audits:</i>
+                <ul>
+                    {% for audit in brand.audits %}
+                        <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>
+                                {{ audit.title }}</a>, {{ audit.timestamp }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </p>
+    <hr width=25%>
+    {% endfor %}
 {% endblock %}
