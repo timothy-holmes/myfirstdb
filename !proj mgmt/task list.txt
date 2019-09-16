@@ -9,5 +9,8 @@ Update brand configuration system
 Update data import process to give import report
 Build editor for updating brand configurations (low priority)
 Create logging system for all activities
-
-Create annotation system for audits
+Fix app folder structure wrt uploads/store
+!!! Create annotation system for audits
+Add error handling
+Add admin privleges
+Add mail support for user accounts

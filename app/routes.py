@@ -21,7 +21,28 @@ def allowed_file(filename):
 def index():
     return render_template('index.html', title='Home')
 
-# users 
+#
+# SITE MAP
+#
+def has_no_empty_params(rule): # for use with site-map route
+    defaults = rule.defaults if rule.defaults is not None else ()
+    arguments = rule.arguments if rule.arguments is not None else ()
+    return len(defaults) >= len(arguments)
+    
+@app.route('/site-map')
+def site_map():
+    links = []
+    for rule in app.url_map.iter_rules():
+        # Filter out rules we can't navigate to in a browser
+        # and rules that require parameters
+        if "GET" in rule.methods and has_no_empty_params(rule):
+            url = url_for(rule.endpoint, **(rule.defaults or {}))
+            links.append((url, rule.endpoint))
+    return render_template('site_map.html', title='Site Map', links=links)
+
+#
+# USERS 
+#
 @app.route('/login', methods=['GET','POST'])
 def login():
     if current_user.is_authenticated:
@@ -42,7 +63,7 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+    return render_template('user/login.html', title='Sign In', form=form)
 
 @app.route('/logout')
 def logout():
@@ -62,7 +83,7 @@ def register():
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
-    return render_template('register.html', title='Register', form=form)
+    return render_template('user/register.html', title='Register', form=form)
 
 @app.route('/user/list')
 def list_of_users():
@@ -74,25 +95,45 @@ def list_of_users():
         flash('Not administrator - {}'.format(user.admin))
         return redirect(url_for('index'))
     users = db.session.query(User).all()
-    return render_template('list_of_users.html', title='List of Users', users=users)
+    return render_template('user/list.html', title='List of Users', users=users)
 
-# audits    
+#
+# AUDITS
+# 
+@app.route('/audit/list')
+def audit_list():
+    audits = Audit.query.all()
+    return render_template('audit/list.html', title='Audits', audits=audits)
+ 
 @app.route('/audit/<audit_id>')
-def audit_report(audit_id):
-    audit = Audit.query.filter_by(id=int(audit_id)).first()
-    return render_template('audit_report.html', title='Audit {}'.format(audit_id), audit=audit)
-
 @app.route('/audit/<audit_id>/order')    
 @app.route('/audit/<audit_id>/order/<page_num>')
-def audit_report_by_order(audit_id,page_num=1):
+def audit_report(audit_id,page_num=1):
     audit = Audit.query.filter_by(id=int(audit_id)).first()
     order = SalesOrder.query.filter_by(audit_id=audit.id).order_by(SalesOrder.suo).paginate(page=int(page_num),per_page=1,error_out=True)
-    next_url = url_for('audit_report_by_order', audit_id=audit_id, page_num=order.next_num) if order.has_next else None
-    prev_url = url_for('audit_report_by_order', audit_id=audit_id,page_num=order.prev_num) if order.has_prev else None
-    return render_template('audit_report_by_order.html', title='Audit {}'.format(audit_id), audit=audit, order=order.items, next_url=next_url, prev_url=prev_url)
+    next_url = url_for('audit_report', audit_id=audit_id, page_num=order.next_num) if order.has_next else None
+    prev_url = url_for('audit_report', audit_id=audit_id,page_num=order.prev_num) if order.has_prev else None
+    return render_template('audit/display.html', title='Audit {}'.format(audit_id), audit=audit, order=order.items, next_url=next_url, prev_url=prev_url)
+     
+@app.route('/audit/new', methods=['GET','POST'])
+def new_audit():
+    form = NewAuditForm()
+    if form.validate_on_submit():
+        this_audit = Audit()
+        this_audit.user_id = current_user.id
+        this_audit.brand_id = form.brand_id.data
+        db.session.add(this_audit)
+        db.session.commit()
+        return redirect(url_for('audit_report',audit_id=this_audit.id))
+    return render_template('audit/add.html', title='Add new audit', form=form)
     
+#
+# DATA IMPORT
+#
 @app.route('/audit/<audit_id>/import', methods=['GET','POST'])
 def import_data(audit_id):
+    if audit_id == -1:
+        redirect(url_for('audit_report'))
     form = UploadForm()
     if request.method == 'POST' and form.validate_on_submit():
         audit_id = form.audit_id.data
@@ -114,18 +155,13 @@ def import_data(audit_id):
         return redirect(url_for('accept_data',audit_id=this_audit.id,filename=filename))
     form.audit_id.default = audit_id
     form.process()
-    return render_template('upload_data.html',form=form)
+    return render_template('audit/upload_data.html',form=form)
 
 @app.route('/audit/<audit_id>/import-accept/<filename>') 
 def accept_data(audit_id,filename):
     audit = Audit.query.filter_by(id=int(audit_id)).first()
     accepted = request.args.get('accepted',default=0)
-    with open(os.path.join(app.config['UPLOAD_FOLDER'], filename),'rb') as csv_file:
-            hash_sha512 = hashlib.sha512()
-            chunk = csv_file.read()
-            hash_sha512.update(chunk)
-            checksum = str(hash_sha512.hexdigest())
-    if accepted:
+    if accepted: # data accept, push to db
         with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as csv2_file:
             header = next(csv.reader(csv2_file))
         with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as csv3_file:
@@ -135,32 +171,26 @@ def accept_data(audit_id,filename):
         db.session.add(u)
         db.session.commit()
         return redirect(url_for('audit_report',audit_id=audit.id))
-    else:
+    else: # check for duplicate import file before accepting
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], filename),'rb') as csv_file:
+            hash_sha512 = hashlib.sha512()
+            chunk = csv_file.read()
+            hash_sha512.update(chunk)
+            checksum = str(hash_sha512.hexdigest())
         duplicates = db.session.query(UploadedFile).filter_by(checksum=checksum)
         if duplicates.first():
             proceed_url = url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True)
-            return render_template('data_warning.html',duplicates=duplicates.all(),audit=audit,proceed_url=proceed_url)
+            return render_template('audit/data_warning.html',duplicates=duplicates.all(),audit=audit,proceed_url=proceed_url)
         else:
             return redirect(url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True))
 
-    
-@app.route('/audit/new', methods=['GET','POST'])
-def new_audit():
-    form = NewAuditForm()
-    if form.validate_on_submit():
-        this_audit = Audit()
-        this_audit.user_id = current_user.id
-        this_audit.brand_id = form.brand_id.data
-        db.session.add(this_audit)
-        db.session.commit()
-        return redirect(url_for('audit_report',audit_id=this_audit.id))
-    return render_template('add_audit.html', title='Add new audit', form=form)
-
-# brand    
+#
+# BRANDS
+#    
 @app.route('/brand/list')
 def brand_report():
     brands = Brand.query.all()
-    return render_template('list_of_brands.html', title='List of Brands', brands=brands)
+    return render_template('brand/list.html', title='List of Brands', brands=brands)
     
 @app.route('/brand/new', methods=['GET','POST'])
 def new_brand():
@@ -172,4 +202,4 @@ def new_brand():
         db.session.add(brand)
         db.session.commit()
         return redirect(url_for('brand_report'))
-    return render_template('add_brand.html', title='Add new brand', form=form)
+    return render_template('brand/add.html', title='Add new brand', form=form)

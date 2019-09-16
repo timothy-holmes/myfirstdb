@@ -15,8 +15,8 @@
 {% block styles -%}
     {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
                     will disappear! #}
-    <link rel="stylesheet" type="text/css"
-          href="{{url_for('static', filename='sample-app.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='sample-app.css')}}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 {% endblock %}
 
 {% block navbar %}
@@ -42,24 +42,24 @@
                           aria-haspopup="true" aria-expanded="false">Audits</a>
                         <ul class="dropdown-menu dropdown-primary" aria-labelledby="navbarDropdownMenuLink">
                           <li><a class="dropdown-item nav-link" href="{{ url_for('new_audit') }}">Start New Audit</a></li>
-                          <li><a class="dropdown-item nav-link" href="#">List Audits</a></li>
-                          <li><a class="dropdown-item nav-link" href="{{ url_for('new_audit') }}">Import Audit Data</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('audit_list') }}">List Audits</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('import_data',audit_id=-1) }}">Import Audit Data</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
                           aria-haspopup="true" aria-expanded="false">Brands</a>
                         <ul class="dropdown-menu dropdown-primary" aria-labelledby="navbarDropdownMenuLink">
-                          <li><a class="dropdown-item nav-link" href="#">Add New Brand</a></li>
-                          <li><a class="dropdown-item nav-link" href="#">List Brands</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('new_brand') }}">Add New Brand</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('brand_report') }}">List Brands</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
                           aria-haspopup="true" aria-expanded="false">Users</a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                          <li><a class="dropdown-item nav-link" href="#">Add New User</a></li>
-                          <li><a class="dropdown-item nav-link" href="#">List Users</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('register') }}">Add New User</a></li>
+                          <li><a class="dropdown-item nav-link" href="{{ url_for('list_of_users') }}">List Users</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -68,7 +68,7 @@
                     {% if current_user.is_anonymous %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
                     {% else %}
-                    <li><a>{{- current_user.username }}</a></li>
+                    <li><a href="{{ url_for('site_map') }}">{{- current_user.username }}</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% endif %}
                 </ul>

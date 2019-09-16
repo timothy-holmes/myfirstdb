@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>{{ title }}</h1>
+        
+    {% for audit in audits %}
+        <p><a href={{ url_for('audit_report', audit_id=audit.id) }}>{{ audit.id }}, {{ audit.timestamp_created }}, {{ audit.brand.name }}, {{ audit.auditor.username }}</a></p>
+    {% endfor %}
+
+{% endblock %}

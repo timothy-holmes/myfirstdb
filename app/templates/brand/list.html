@@ -11,11 +11,11 @@
                 <i>Audits:</i>
                 <ul>
                     {% for audit in brand.audits %}
-                        <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>
-                                {{ audit.title }}</a>, {{ audit.timestamp }}</li>
+                        <li><a href={{ url_for('audit_report', audit_id=audit.id) }}>{{ audit.id }}, {{ audit.timestamp_created }}, {{ audit.auditor.username }}</a></li>
                     {% endfor %}
                 </ul>
             {% endif %}
+            <i>Configuration:</i><a href={{ url_for('static',filename=('brands/'+brand.code+'.json')) }}>link (JSON)</a><br>
         </p>
     <hr width=25%>
     {% endfor %}

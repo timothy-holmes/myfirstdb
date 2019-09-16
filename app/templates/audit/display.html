@@ -10,18 +10,18 @@
     
     {%- if audit.orders %}
         {%- for o in order %}
-            <div class="order-box-container">
+            <div class="panel panel-default">
                 <h2>Sales Details</h2>
                 <b>SUO:</b> {{ o.suo }}<br>
                 <b>List Price:</b> {{ o.list_price }}<br>
                 <b>OW Date:</b> {{ o.ow_date }}<br>
                 <b>OW Customer:</b> {{ o.ow_customer }}<br>
             </div>
-            <div class="vehicle-box-container">
+            <div class="panel panel-default">
                 <h2>Vehicle Details</h2>
                 <i>No details yet</i>
             </div>            
-            <div class="items-box-container">
+            <div class="panel panel-default">
                 <h2>Incentive Details</h2>
                 {% for item in o.items %}
                     <b>{{ item.description }}:</b> {{ item.amount }}<br>
