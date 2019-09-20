@@ -1,8 +1,5 @@
 Update front end for bootstrap
-    Add views for:
-    - List of audits
-    - Import audit data without specifying audit ID
-    - List of brands
+    - Not sure what though...
 Rebuild data tables (make names friendly, make general across brands)
 Update brand configuration system
     - duplicate or split columns eg. date, customer name

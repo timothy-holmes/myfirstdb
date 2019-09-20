@@ -55,7 +55,7 @@ class UploadForm(FlaskForm):
         audit_query = db.session.query(Audit).filter_by(user_id=current_user.id).all()
     else:
         audit_query = db.session.query(Audit).all()
-    audit_choices = [(a.id, '{}-{}'.format(db.session.query(Brand).filter_by(id=a.brand_id).first().name,a.timestamp_created)) for a in audit_query]
+    audit_choices = [(a.id, '{}-{}'.format(db.session.query(Brand).filter_by(id=a.brand_id).first().name,a.created_on)) for a in audit_query]
    
     audit_id = SelectField('Audit', coerce=int, choices=audit_choices, validators=[DataRequired()])
     file = FileField('File', validators=[DataRequired()])

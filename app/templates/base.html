@@ -1,7 +1,7 @@
 {%- extends "bootstrap/base.html" %}
 
 {% block title %}
-    {% if title %}{{ title }} - Audits{% else %}Audits{% endif %}
+    {% if title %}{{ title }} - SuperAudit{% else %}SuperAudit{% endif %}
 {% endblock %}
 
 {% import "bootstrap/utils.html" as utils %}
@@ -16,7 +16,7 @@
     {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
                     will disappear! #}
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='sample-app.css')}}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico',this_app='superaudit') }}">
 {% endblock %}
 
 {% block navbar %}
@@ -29,7 +29,8 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="{{ url_for('index') }}">SuperAudit</a>
+                <a class="navbar-left"><img src="{{ url_for('static', filename='img/logo.png') }}" style="height: 50px; margin: 0 30px">  </a>
+                <a class="navbar-brand">SuperAudit</a>
             </div>
             
             <!-- Collapsible Content -->
@@ -90,3 +91,8 @@
   {%- endwith %}
   {% block app_content %}{% endblock %}
 {%- endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static',filename='js/comment_client.js') }}?version={{ js_version }}"></script>
+{% endblock %}

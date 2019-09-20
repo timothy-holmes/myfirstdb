@@ -5,7 +5,7 @@ from app.helpers import float_or_none, submit_data_db
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, NewBrandForm, NewAuditForm, UploadForm
-from app.helpers import float_or_none
+from app.helpers import float_or_none, get_comment_by_parent
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
 from app.models import User, Audit, Brand, SalesOrder, SalesItem, UploadedFile
@@ -158,7 +158,7 @@ def import_data(audit_id):
     return render_template('audit/upload_data.html',form=form)
 
 @app.route('/audit/<audit_id>/import-accept/<filename>') 
-def accept_data(audit_id,filename):
+def accept_data(audit_id,filename,checksum=None):
     audit = Audit.query.filter_by(id=int(audit_id)).first()
     accepted = request.args.get('accepted',default=0)
     if accepted: # data accept, push to db
@@ -179,10 +179,10 @@ def accept_data(audit_id,filename):
             checksum = str(hash_sha512.hexdigest())
         duplicates = db.session.query(UploadedFile).filter_by(checksum=checksum)
         if duplicates.first():
-            proceed_url = url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True)
+            proceed_url = url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True,checksum=checksum)
             return render_template('audit/data_warning.html',duplicates=duplicates.all(),audit=audit,proceed_url=proceed_url)
         else:
-            return redirect(url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True))
+            return redirect(url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True,checksum=checksum))
 
 #
 # BRANDS
@@ -203,3 +203,39 @@ def new_brand():
         db.session.commit()
         return redirect(url_for('brand_report'))
     return render_template('brand/add.html', title='Add new brand', form=form)
+
+"""
+#
+# COMMENTS
+#
+@app.route('comment/get', methods=['POST'])
+def get_comment():
+    if request.method == 'POST' and request.is_json:
+        comment_header = request.get_json()
+        if comment_header.get('parent_type') = 'order':
+            got_comment = SalesOrder.query.filter_by(id=comment_header.get('parent_id')).comments.first()
+        elif comment_header.get('parent_type') = 'item':
+            got_comment = SalesItem.query.filter_by(id=comment_header.get('parent_id')).comments.first()            
+        else:
+            pass #error
+        return jsonify(got_comment.as_dict())
+    
+@app.route('comment/edit', methods=['POST'])
+def edit_comment(): # this can be rewritten so that there is one line for getting parent object and one line for passing it to the new Comment instance
+    if request.method == 'POST' and request.is_json:
+        comment_details = request.get_json()
+        # get parent object
+        if comment_header.get('parent_type') == 'order':
+            parent = SalesOrder.query.filter_by(id=comment_header.get('parent_id')).first()
+        elif comment_header.get('parent_type') == 'item':
+            parent = SalesItem.query.filter_by(id=comment_header.get('parent_id')).first()            
+        else:
+            pass #error
+        if not parent.comments:
+            this_comment = Comment() # new
+            this_comment.parent = parent
+        for k,v in comment_details.items():
+            try:
+                this_comment.setattr(k) = v
+        return True    
+"""

@@ -1,7 +1,7 @@
-import csv, json, os
+import csv, json, os, hashlib
 import inspect
 from app import app, db
-from app.models import User, Audit, Brand, SalesOrder, SalesItem
+from app.models import User, Audit, Brand, SalesOrder, SalesItem, Comment, table_object
 
 def float_or_none(value):
     value = value.replace(',','')
@@ -12,10 +12,20 @@ def float_or_none(value):
             return float_or_none('0')
         else:
             return value
+            
+def get_js_version_hash():
+    hash_md5 = hashlib.md5()
+    js_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static','js')
+    for file in os.listdir(js_folder):
+        if file.endswith(".js"):
+            with open(os.path.join(js_folder,file), "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+    return hash_md5.hexdigest()[:8]
         
 def submit_data_db(data_dict,data_headers,audit_obj):
     brand_code = Brand.query.filter_by(id=audit_obj.brand_id).first().code
-    with open(os.path.join(app.config['STORE_FOLDER'], brand_code + '.json')) as json_file:
+    with open(os.path.join('app','static','json','brands', brand_code + '.json')) as json_file:
         brand_map = json.load(json_file)
         salesorder_class_map = [i[0] for i in inspect.getmembers(SalesOrder()) if not i[0].startswith('_') and i[1] is None]
         salesitem_class_map = [i[0] for i in inspect.getmembers(SalesItem()) if not i[0].startswith('_') and i[1] is None]
@@ -48,3 +58,13 @@ def delete_all_sales():
     for i in f:
         db.session.delete(i)
     db.session.commit()
+    
+def get_comment_by_parent(parent_table,parent_id):
+    # assuming parent object exists (need to add error handling?)
+    parent = db.session.query(table_object(parent_table=parent_table)).filter_by(id=parent_id).first()
+    if parent.comments:
+        return parent.comments.first()
+    else: # if comment doesn't exist, make a new one
+        c = Comment()
+        parent.comments.append(c)
+        return c
