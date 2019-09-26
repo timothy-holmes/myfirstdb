@@ -1,21 +1,26 @@
 {
-    "sales_order": {
-        "suo": "SUO",
-        "list_price": "List Price",
-        "ow_date": "OW Date",
-        "ow_customer": "OW Customer",
-        "retail_date": "Retail Date",
-        "onsell_date": "Demo/CC Onsell Date",
-        "customer_name": "Retail Customer Name",
-        "fleet_name": "Fleet Customer Name",
-        "fleet_rego": "Fleet Registration Number",
-        "sfa_discount": "Special Assistance Discount",
-        "sfa_amount": "Special Assistance Amount",
-        "delivery_fee": "Dealer Delivery Fee"
+    "config": {
+        "seperator": "\t"
+        "cvp_program": "NIS"
+    },
+    "tables": {    
+        "sales_order": {
+            "suo": {"name": "SUO", "type": "int", "ifempty": "skip"},
+            "list_price": {"name": "List Price", "type": "float", "ifempty": 0},
+            "ow_date": {"name": "OW Date", "type": "date", "ifempty": None },
+            "ow_customer": {"name": "OW Customer", "type": "string", "ifempty": "" },
+            "retail_date": {"name": "Retail Date", "type": "date", "ifempty": None },
+            "onsell_date": {"name": "Demo/CC Onsell Date", "type": "date", "ifempty": None },
+            "customer_name": {"name": "Retail Customer Name", "type": "string", "ifempty": "" },
+            "fleet_name": {"name": "Fleet Customer Name", "type": "string", "ifempty": "skip" },
+            "fleet_rego": {"name": "Fleet Registration Number", "type": "string", "ifempty": "skip" },
+            "sfa_discount": {"name": "Special Assistance Discount", "type": "float", "ifempty": "skip" },
+            "sfa_amount": {"name": "Special Assistance Amount", "type": "float", "ifempty": "skip" },
+            "delivery_fee": {"name": "Dealer Delivery Fee", "type": "float", "ifempty": "skip" },
         },
-    "sales_item": {
-        "description": "Campaign Description",
-        "amount": "Claim Amount"
+        "sales_item": {
+            "description": {"name": "Campaign Description", "type": "string", "ifempty": "skip" },
+            "amount": {"name": "Claim Amount", "type": "float", "ifempty": 0 }
         }
+    }
 }
-

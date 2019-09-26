@@ -1,11 +1,10 @@
 import os, csv, time
 import hashlib
 from datetime import datetime
-from app.helpers import float_or_none, submit_data_db
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, NewBrandForm, NewAuditForm, UploadForm
-from app.helpers import float_or_none, get_comment_by_parent
+from app.helpers import get_comment_by_parent
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
 from app.models import User, Audit, Brand, SalesOrder, SalesItem, UploadedFile
@@ -44,7 +43,7 @@ def site_map():
 # USERS 
 #
 @app.route('/login', methods=['GET','POST'])
-def login():
+def login(): # this is login_view
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
@@ -131,27 +130,45 @@ def new_audit():
 # DATA IMPORT
 #
 @app.route('/audit/<audit_id>/import', methods=['GET','POST'])
-def import_data(audit_id):
+def import_data(audit_id,import_id):
     if audit_id == -1:
         redirect(url_for('audit_report'))
     form = UploadForm()
     if request.method == 'POST' and form.validate_on_submit():
         audit_id = form.audit_id.data
         this_audit = Audit.query.filter_by(id=audit_id).first()
+        if this_audit.data_import.all() is None:
+            this_dataimport = DataImport()
+            this_audit.data_import.append(this_data_import)
+        elif:
+            this_data_import = this_audit.data_import.first()        
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
-        file = request.files['file']
+        files = request.files.getlist('file')
+        for file in files:
         # if user does not select file, browser also
         # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename_orginal = file.filename
-            filename = secure_filename(str(audit_id) + '-' + time.strftime('%Y%m%d%H%M%S', time.gmtime(time.time())))
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename_orginal = file.filename
+                filename = secure_filename(str(audit_id) + '-' + time.strftime('%Y%m%d%H%M%S', time.gmtime(time.time())))
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # checksum
+                with open(os.path.join(app.config['UPLOAD_FOLDER'], filename),'rb') as csv_file:
+                    hash_sha512 = hashlib.sha512()
+                    chunk = csv_file.read()
+                    hash_sha512.update(chunk)
+                    checksum = str(hash_sha512.hexdigest())
+                # file_size
+                file_size = os.path.getsize(os.path.join(app.config['UPLOAD_FOLDER'], filename)) / 1024
+                this_uploadedfile = UploadedFile(filename_stored=filename,checksum=checksum,fize_size=file_size)
+                this_dataimport.add_upload(this_uploadedfile)
+        db.session.commit()
+        ############ upload done, what now
         return redirect(url_for('accept_data',audit_id=this_audit.id,filename=filename))
     form.audit_id.default = audit_id
     form.process()
@@ -159,7 +176,7 @@ def import_data(audit_id):
 
 @app.route('/audit/<audit_id>/import-accept/<filename>') 
 def accept_data(audit_id,filename,checksum=None):
-    audit = Audit.query.filter_by(id=int(audit_id)).first()
+    audit = Audit.query.filter_by(id=audit_id).first()
     accepted = request.args.get('accepted',default=0)
     if accepted: # data accept, push to db
         with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as csv2_file:
@@ -177,8 +194,8 @@ def accept_data(audit_id,filename,checksum=None):
             chunk = csv_file.read()
             hash_sha512.update(chunk)
             checksum = str(hash_sha512.hexdigest())
-        duplicates = db.session.query(UploadedFile).filter_by(checksum=checksum)
-        if duplicates.first():
+        duplicates = db.session.query(UploadedFile).filter_by(checksum=checksum).all()
+        if duplicates:
             proceed_url = url_for('accept_data',audit_id=audit.id,filename=filename,accepted=True,checksum=checksum)
             return render_template('audit/data_warning.html',duplicates=duplicates.all(),audit=audit,proceed_url=proceed_url)
         else:

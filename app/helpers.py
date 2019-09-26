@@ -1,18 +1,8 @@
 import csv, json, os, hashlib
 import inspect
 from app import app, db
-from app.models import User, Audit, Brand, SalesOrder, SalesItem, Comment, table_object
+from app.models import User, Audit, Brand, SalesOrder, SalesItem, Comment, table_object, new_table_object
 
-def float_or_none(value):
-    value = value.replace(',','')
-    try:
-        return int(value)
-    except:
-        if value == '':
-            return float_or_none('0')
-        else:
-            return value
-            
 def get_js_version_hash():
     hash_md5 = hashlib.md5()
     js_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static','js')
@@ -22,18 +12,23 @@ def get_js_version_hash():
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
     return hash_md5.hexdigest()[:8]
-        
-def submit_data_db(data_dict,data_headers,audit_obj):
-    brand_code = Brand.query.filter_by(id=audit_obj.brand_id).first().code
-    with open(os.path.join('app','static','json','brands', brand_code + '.json')) as json_file:
-        brand_map = json.load(json_file)
-        salesorder_class_map = [i[0] for i in inspect.getmembers(SalesOrder()) if not i[0].startswith('_') and i[1] is None]
-        salesitem_class_map = [i[0] for i in inspect.getmembers(SalesItem()) if not i[0].startswith('_') and i[1] is None]
-        sales_orders_fields = brand_map['sales_order']
-        sales_items_fields = brand_map['sales_item']
-        sales_orders_fields = dict([(table_field,data_field) for table_field, data_field in sales_orders_fields.items() if (data_field in data_headers) and (table_field in salesorder_class_map)])
-        sales_items_fields = dict([(table_field,data_field) for table_field, data_field in sales_items_fields.items() if (data_field in data_headers) and (table_field in salesitem_class_map)])
-    for row in data_dict:
+    
+def add_to_logfile():
+    pass
+    # list of events
+    # open JSON and append event to file
+    # return success
+ 
+def dataimport_parse(dataimport):
+    # accepts dataimport object
+    # returns dictionary
+    brand_map = dataimport.audit.brand.brand_map()
+    for uploaded_file in dataimport.uploads:
+        data_dict = uploaded_file.as_data_dict()
+        for row in data_dict:
+            new_entries_this_row = []
+            for table,fields in brand_map.get('tables'):
+                this_table = new_table_object(table,fields)
         this_so = SalesOrder.query.filter_by(suo = row[sales_orders_fields.get('suo')]).first() # TO DO add brand prefix to create unique order number
         if not this_so: # this SalesOrder is not in the db yet
             this_so = SalesOrder()
