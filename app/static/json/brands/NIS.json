@@ -1,26 +1,61 @@
 {
     "config": {
-        "seperator": "\t"
-        "cvp_program": "NIS"
+        "seperator": "\t",
+        "cvp_program": "NIS",
+        "date_format": "%d/%m/%Y",
+        "thousands_seperator": ","
+    },
+    "sales_type_group": {
+        "bus": {
+            "name": "Business Fleet Plan & Retail",
+            "members": ["B","R"]
+        },
+        "demo": {
+            "name": "Demostrator, Loan Car & Z Car",
+            "members": ["D","X","Z"]
+        },
+        "prem": {
+            "name": "Premium Fleet",
+            "members": ["E","H","W"]
+        },
+        "gov": {
+            "name": "Government",
+            "members": ["L","S","C"]
+        },
+        "par": {
+            "name": "Partner Program",
+            "members": ["I","U"]
+        },
+        "nat": {
+            "name": "National Fleet",
+            "members": ["N","Y"]
+        },
+        "corp": {
+            "name": "Nissan Corporate Employees",
+            "members": ["O"]
+        }
     },
     "tables": {    
         "sales_order": {
-            "suo": {"name": "SUO", "type": "int", "ifempty": "skip"},
+            "suo": {"prefix": "NIS", "name": "SUO", "type": "string", "ifempty": "skip_all"},
+            "sales_type": {"name": "Sales Type", "type": "string", "ifempty": "skip"},
             "list_price": {"name": "List Price", "type": "float", "ifempty": 0},
-            "ow_date": {"name": "OW Date", "type": "date", "ifempty": None },
+            "ow_date": {"name": "OW Date", "type": "date"},
             "ow_customer": {"name": "OW Customer", "type": "string", "ifempty": "" },
-            "retail_date": {"name": "Retail Date", "type": "date", "ifempty": None },
-            "onsell_date": {"name": "Demo/CC Onsell Date", "type": "date", "ifempty": None },
+            "retail_date": {"name": "Retail Date", "type": "date"},
+            "onsell_date": {"name": "Demo/CC Onsell Date", "type":  "date"},
             "customer_name": {"name": "Retail Customer Name", "type": "string", "ifempty": "" },
             "fleet_name": {"name": "Fleet Customer Name", "type": "string", "ifempty": "skip" },
             "fleet_rego": {"name": "Fleet Registration Number", "type": "string", "ifempty": "skip" },
             "sfa_discount": {"name": "Special Assistance Discount", "type": "float", "ifempty": "skip" },
             "sfa_amount": {"name": "Special Assistance Amount", "type": "float", "ifempty": "skip" },
             "delivery_fee": {"name": "Dealer Delivery Fee", "type": "float", "ifempty": "skip" },
+            "rego_num": {"name": "Rego No.", "type": "string", "ifempty": "skip" },
+            "model_code": {"name": "Model Code", "type": "string", "ifempty": "skip"}
         },
         "sales_item": {
-            "description": {"name": "Campaign Description", "type": "string", "ifempty": "skip" },
-            "amount": {"name": "Claim Amount", "type": "float", "ifempty": 0 }
+            "description": {"name": "Campaign Description", "type": "string", "ifempty": "text: No Description" },
+            "amount": {"name": "Claim Amount", "type": "float", "ifempty": "skip_all" }
         }
     }
 }

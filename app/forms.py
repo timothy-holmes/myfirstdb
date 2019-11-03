@@ -45,19 +45,11 @@ class NewBrandForm(FlaskForm):
             raise ValidationError('Please use a different code.')
 
 class NewAuditForm(FlaskForm):
-    brand_choices = [(b.id, b.name) for b in db.session.query(Brand).all()]        
-    brand_id = SelectField('Brand', coerce=int, choices=brand_choices, validators=[DataRequired()])
+    brand_id = SelectField('Brand', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Add')
             
 class UploadForm(FlaskForm):
     # audit choices filtered to audits created by current user, ordered by time created, display is date, brand and dealer names
-    if current_user:
-        audit_query = db.session.query(Audit).filter_by(user_id=current_user.id).all()
-    else:
-        audit_query = db.session.query(Audit).all()
-    audit_choices = [(a.id, '{}-{}'.format(db.session.query(Brand).filter_by(id=a.brand_id).first().name,a.created_on)) for a in audit_query]
-   
-    audit_id = SelectField('Audit', coerce=int, choices=audit_choices, validators=[DataRequired()])
-    file = FileField('File', validators=[DataRequired()])
-    
+    audit_id = SelectField('Audit', coerce=int, validators=[DataRequired()])    
+    file = FileField('File', validators=[DataRequired()])    
     submit = SubmitField('Upload')

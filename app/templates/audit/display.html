@@ -51,8 +51,17 @@
                     {% endfor %}
                 </div>
             </div>
-            <br>
         {% endfor %}
+        {%- if prev_url or next_url %}
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    {% endif %}
+                    {%- if prev_url %}<a href={{ prev_url }}>Previous Order</a> | {% endif %}
+                    {%- if next_url %}<a href={{ next_url }}>Next Order</a>{%- endif %}
+                    {%- if prev_url or next_url %}
+                </div>
+            </div>   
+        {% endif %}
         <!-- COMMENT MODAL -->
         <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -83,8 +92,11 @@
           </div>
         </div>
     {% else %}
-        <i>No data imported for this audit.</i>&nbsp;<a href="{{ url_for('import_data',audit_id=audit.id) }}">Import data for this audit.</a>
-    {% endif %}    
-    {%- if prev_url %}<a href={{ prev_url }}>Previous Order</a> | {% endif %}
-    {%- if next_url %}<a href={{ next_url }}>Next Order</a>{%- endif %}
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <i>No data imported for this audit.</i>&nbsp;<a href="{{ url_for('import_data',audit_id=audit.id) }}">Import data for this audit.</a>
+            </div>
+        </div>        
+    {% endif %}
+
 {% endblock %}

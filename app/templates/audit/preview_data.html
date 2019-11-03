@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>Uploaded Data</h1>
+    <i>Data Looks Good? </i><a href="{{ url_for('accept_data',audit_id=audit_id) }}">Proceed.</a><br><br>
+    {{ data }}
+{% endblock %}

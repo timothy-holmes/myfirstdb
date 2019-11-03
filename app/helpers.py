@@ -1,65 +1,136 @@
-import csv, json, os, hashlib
+import csv, json, os
+from datetime import datetime
 import inspect
 from app import app, db
-from app.models import User, Audit, Brand, SalesOrder, SalesItem, Comment, table_object, new_table_object
 
-def get_js_version_hash():
-    hash_md5 = hashlib.md5()
-    js_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static','js')
-    for file in os.listdir(js_folder):
-        if file.endswith(".js"):
-            with open(os.path.join(js_folder,file), "rb") as f:
-                for chunk in iter(lambda: f.read(4096), b""):
-                    hash_md5.update(chunk)
-    return hash_md5.hexdigest()[:8]
-    
+def allowed_file(filename):
+	return (
+        '.' in filename and 
+        filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    )
+
 def add_to_logfile():
     pass
     # list of events
     # open JSON and append event to file
     # return success
- 
-def dataimport_parse(dataimport):
-    # accepts dataimport object
-    # returns dictionary
-    brand_map = dataimport.audit.brand.brand_map()
-    for uploaded_file in dataimport.uploads:
-        data_dict = uploaded_file.as_data_dict()
-        for row in data_dict:
-            new_entries_this_row = []
-            for table,fields in brand_map.get('tables'):
-                this_table = new_table_object(table,fields)
-        this_so = SalesOrder.query.filter_by(suo = row[sales_orders_fields.get('suo')]).first() # TO DO add brand prefix to create unique order number
-        if not this_so: # this SalesOrder is not in the db yet
-            this_so = SalesOrder()
-            for k,v in sales_orders_fields.items():
-                setattr(this_so,k,float_or_none(row[v]))
-            audit_obj.orders.append(this_so)
-            db.session.add(this_so)
-        this_si = SalesItem.query.filter_by(sales_order_id = this_so.id,description = row[sales_items_fields.get('description')],amount = float_or_none(row[sales_items_fields.get('amount')])).first()
-        if not this_si: # this SalesOrder is not in the db yet
-            this_si = SalesItem()
-            for k,v in sales_items_fields.items():
-                setattr(this_si,k,float_or_none(row[v]))
-            this_so.items.append(this_si)
-            db.session.add(this_si)
-    db.session.commit()
 
-def delete_all_sales():
-    f = SalesOrder.query.all()
-    g = SalesItem.query.all()
-    for j in g:
-        db.session.delete(j)
-    for i in f:
-        db.session.delete(i)
-    db.session.commit()
-    
-def get_comment_by_parent(parent_table,parent_id):
-    # assuming parent object exists (need to add error handling?)
-    parent = db.session.query(table_object(parent_table=parent_table)).filter_by(id=parent_id).first()
-    if parent.comments:
-        return parent.comments.first()
-    else: # if comment doesn't exist, make a new one
-        c = Comment()
-        parent.comments.append(c)
-        return c
+def build_args_dict(data_row,table,brand_map):
+    args_dict = {}
+    for field,field_dict in brand_map["tables"][table].items():
+        field_value = data_row[field_dict["name"]].lstrip().rstrip()
+        if field_value == "":
+            if field_dict.get("ifempty",None) == "skip" or not field_dict.get("ifempty",None):
+                continue
+            elif field_dict.get("ifempty",None) == "skip_all":
+                break # needs more logic
+            elif field_dict.get("ifempty",None)[:5] == 'text: ':
+                field_value = field_dict["ifempty"][6:]
+            else:
+                field_value = field_dict["ifempty"]
+        args_dict[field] = field_dict.get("prefix","") + field_value
+    else:
+        return args_dict if args_dict else None # return args unless there is no spoon
+    return None # there is no spoon
+
+def convert_args_dict_values(args_dict,table,brand_map):
+    for k,v in args_dict.items(): # convert str to dates, floats
+        if brand_map["tables"][table][k]["type"] == "date":
+            #try:
+            args_dict[k] = datetime.strptime(v, brand_map["config"]["date_format"])
+            #except:
+            #    args_dict[k] = 'Invalid Date'
+        elif brand_map["tables"][table][k]["type"] == "float":
+            #try:
+            args_dict[k] = float(v.replace(brand_map["config"]["thousands_seperator"],''))
+            #except:
+            #    args_dict[k] = 'Invalid Number'
+    return args_dict
+
+def get_table_object(table_name,tables_dict):
+    return tables_dict.get(table_name)
+   
+def new_table_object(table_name, tables_dict, init_args):
+    # this an implementation of the Factory Method Pattern
+    table = tables_dict.get(table_name)
+    return table(init_args)
+
+def prnDict(aDict, br='\n', html=0,
+            keyAlign='l',   sortKey=0,
+            keyPrefix='',   keySuffix='',
+            valuePrefix='', valueSuffix='',
+            leftMargin=0,   indent=1 ):
+    '''
+return a string representive of aDict in the following format:
+    {
+     key1: value1,
+     key2: value2,
+     ...
+     }
+
+Spaces will be added to the keys to make them have same width.
+
+sortKey: set to 1 if want keys sorted;
+keyAlign: either 'l' or 'r', for left, right align, respectively.
+keyPrefix, keySuffix, valuePrefix, valueSuffix: The prefix and
+   suffix to wrap the keys or values. Good for formatting them
+   for html document(for example, keyPrefix='<b>', keySuffix='</b>'). 
+   Note: The keys will be padded with spaces to have them
+         equally-wide. The pre- and suffix will be added OUTSIDE
+         the entire width.
+html: if set to 1, all spaces will be replaced with '&nbsp;', and
+      the entire output will be wrapped with '<code>' and '</code>'.
+br: determine the carriage return. If html, it is suggested to set
+    br to '<br>'. If you want the html source code eazy to read,
+    set br to '<br>\n'
+
+version: 04b52
+author : Runsun Pan
+require: odict() # an ordered dict, if you want the keys sorted.
+         Dave Benjamin 
+         http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/161403
+    '''
+
+    if aDict:
+
+        #------------------------------ sort key
+        if sortKey:
+            dic = aDict.copy()
+            keys = dic.keys()
+            keys.sort()
+            aDict = odict()
+            for k in keys:
+                aDict[k] = dic[k]
+
+        #------------------- wrap keys with ' ' (quotes) if str
+        tmp = ['{']
+        ks = [type(x)==str and "'%s'"%x or x for x in aDict.keys()]
+
+        #------------------- wrap values with ' ' (quotes) if str
+        vs = [type(x)==str and "'%s'"%x or x for x in aDict.values()] 
+
+        maxKeyLen = max([len(str(x)) for x in ks])
+
+        for i in range(len(ks)):
+
+            #-------------------------- Adjust key width
+            k = {1            : str(ks[i]).ljust(maxKeyLen),
+                 keyAlign=='r': str(ks[i]).rjust(maxKeyLen) }[1]
+
+            v = vs[i]        
+            tmp.append(' '* indent+ '%s%s%s:%s%s%s,' %(
+                        keyPrefix, k, keySuffix,
+                        valuePrefix,v,valueSuffix))
+
+        tmp[-1] = tmp[-1][:-1] # remove the ',' in the last item
+        tmp.append('}')
+
+        if leftMargin:
+          tmp = [ ' '*leftMargin + x for x in tmp ]
+
+        if html:
+            return '<code>%s</code>' %br.join(tmp).replace(' ','&nbsp;')
+        else:
+            return br.join(tmp)     
+    else:
+        return '{}'

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <!-- audit_report_by_order.html -->
+    <div class="panel panel-primary">
+        <div class="panel-heading">Audit Details</div>
+        <div class="panel-body">
+            <b>ID: </b>{{ audit.id }}<br>
+            <b>Auditor: </b>{{ audit.auditor.username }}<br>
+            <b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+            <b>Brand: </b>{{ audit.brand.name}}<br>
+            <b>Timestamp: </b>{{ audit.created_on }}<br>
+            <b>Selected Claims: </b><span id="number_of_selected_claims">{{ selected_count }}</span> of {{ audit.orders|length }}. <a href="{{ url_for('select_cvp_claims',audit_id=audit.id) }}">Proceed with these claims?</a>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">Order Groups</div>
+        <div class="panel-body">
+            {% for group_code,group_dict in sales_groups.items() %}
+                <b>{{ group_dict["name"] }}: </b><a href="#{{ group_code }}">{{ group_code.upper() }} ({{ group_dict["members"]|length }})</a><br>
+            {% endfor %}
+        </div>
+    </div>     
+    <!-- ORDER/ITEM DETAILS -->
+    {%- for group_code,group_dict in sales_groups.items() %}
+        <div class="panel panel-info"><div class="panel-heading" id="{{ group_code }}">{{ group_code.upper() }} - {{ group_dict["name"] }}</div></div>
+        {%- for o in group_dict["members"] %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Sales Details (SUO: {{ o.suo }})
+                    <a href="#" onclick="toggle_select(suo='{{ o.suo }}',audit_id={{ audit.id }});return false;">
+                        <span id = "glyph_{{ o.suo }}" 
+                            {% if o.selected_for_audit %}
+                                class="glyphicon glyphicon-ok-circle" aria-label="Selected"
+                            {% else %}
+                                class="glyphicon glyphicon-remove-circle" aria-label="Not Selected"
+                            {% endif %}
+                        ></span>
+                    </a>
+                </div>
+                <div class="panel-body">
+                    <b>List Price:</b> {{ o.list_price }}<br>
+                    <b>OW Date:</b> {{ o.ow_date }}<br>
+                    <b>OW Customer:</b> {{ o.ow_customer }}<br>
+                    <div class="panel-body">
+                        {% if o.items|length > 1 %}                                
+                            {% for item in o.items %}
+                                <b>{{ item.description }}:</b> {{ item.amount }}<br>
+                            {% endfor %}
+                        {% else %}
+                            <i>No incentives for this order.</i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>       
+        {% endfor %}    
+    {% endfor %}
+{% endblock %}

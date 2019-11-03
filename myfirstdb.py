@@ -1,6 +1,5 @@
 from app import app, db
-from app.models import User, Audit, SalesItem, SalesOrder, Brand
-from app.helpers import delete_all_sales
+from app.models import User, Audit, SalesItem, SalesOrder, Brand, DataImport
 
 @app.shell_context_processor
 def make_shell_context():
@@ -11,7 +10,7 @@ def make_shell_context():
             t.admin = True
             db.session.update(t)
         else:
-            t = User(username='Tim',admin=1)
+            t = User({'username':'Tim','admin':1})
             t.set_password('Tim')
             db.session.add(t)
     db.session.commit()
@@ -23,5 +22,5 @@ def make_shell_context():
         'SalesItem': SalesItem,
         'SalesOrder': SalesOrder,
         'Brand': Brand,
-        'delete_all_sales': delete_all_sales
+        'DataImport': DataImport,
     }
