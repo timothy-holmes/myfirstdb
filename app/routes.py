@@ -97,7 +97,7 @@ def list_of_users():
 #
 # AUDITS
 #
-# new audit -> import data -> preview-data -> accept-data -> select claims ->
+# new audit -> import data -> preview-data (grouped by type) -> accept-data -> select claims ->
 
 @app.route('/audit/list')
 def audit_list():
@@ -146,7 +146,7 @@ def select_claims(audit_id):
         'audit/display_select.html',
         audit=audit,
         sales_groups=audit.group_orders(),
-        selected_count= audit.selected_count()
+        selected_count=audit.selected_count()
     )
 
 @app.route('/audit/select_claim_toggle/', methods=['GET','POST'])
@@ -167,8 +167,28 @@ def select_claim_toggle():
 def select_cvp_claims(audit_id):
     audit = Audit.query.filter_by(id=audit_id).first()
     if audit.brand.code == 'NIS':
-        pass
+        return render_template(
+            'audit/display_select_cvp.html',
+            audit=audit,
+            cvp_list = audit.group_orders_by_cvp_month(),
+            select_cvp_list_by_suo=audit.selected_cvp_list()
+        )
+    else:
+        return 
         
+@app.route('/audit/select_claim_cvp_toggle/', methods=['GET','POST'])
+def select_claim_cvp_toggle():
+    if request.method == 'POST' and request.is_json:
+        request_dict = request.get_json()
+        audit = Audit.query.filter_by(id=request_dict["audit_id"]).first()
+        so = [order for order in audit.orders if order.suo == request_dict["suo"]][0]
+        so.selected_for_audit = not so.selected_for_audit # toggle
+        db.session.commit()
+        return jsonify({
+            "selected_count": audit.selected_cvp_count(),
+            "selected_for_audit": so.selected_for_cvp_audit
+        })
+    return redirect(url_for('index'))
         
 #
 # DATA IMPORT

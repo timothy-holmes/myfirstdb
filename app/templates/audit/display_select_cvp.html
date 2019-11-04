@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <!-- audit_report_by_order.html -->
+    <div class="panel panel-primary">
+        <div class="panel-heading">Audit Details</div>
+        <div class="panel-body">
+            <b>ID: </b>{{ audit.id }}<br>
+            <b>Auditor: </b>{{ audit.auditor.username }}<br>
+            <b>Auditor Email: </b>{{ audit.auditor.email }}<br>
+            <b>Brand: </b>{{ audit.brand.name}}<br>
+            <b>Timestamp: </b>{{ audit.created_on }}<br>
+            <b>Selected Claims: </b><span id="number_of_selected_claims">{{ selected_cvp_list|length }}</span> of {{ audit.orders|length }}. <a href="{{ url_for('select_cvp_claims',audit_id=audit.id) }}">Proceed with these claims?</a>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">CVP Months</div>
+        <div class="panel-body">
+            {% for cvp_month in cvp_list.keys()|sort %}
+                <b>{{ cvp_month }}: </b><a href="#{{ cvp_month }}">{{ cvp_list[cvp_month]["num_of_vehicles"] }} vehicles in {{ cvp_list[cvp_month]["num_of_models"] }}</a><br>
+            {% endfor %}
+        </div>
+    </div>     
+    <!-- ORDER/ITEM DETAILS -->
+    {%- for cvp_month in cvp_list.keys() %}
+        <div class="panel panel-info"><div class="panel-heading" id="{{ cvp_month }}">CVP Month {{ cvp_month }}</div></div>
+        {%- for model,model_contents in cvp_list[cvp_month]["models"].items() %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {{ model }}
+                </div>
+                <div class="panel-body">
+                    {%- for member_suo in model_contents["members"] %}
+                        <div>
+                            <a href="#" onclick="toggle_select(suo='{{ member_suo }}',audit_id={{ audit.id }});return false;">
+                                {{ member_suo }}
+                                <span id = "glyph_{{ member_suo }}" 
+                                    {% if member_suo in selected_cvp_list %}
+                                        class="glyphicon glyphicon-ok-circle" aria-label="Selected"
+                                    {% else %}
+                                        class="glyphicon glyphicon-remove-circle" aria-label="Not Selected"
+                                    {% endif %}
+                                ></span>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}    
+    {% endfor %}
+{% endblock %}

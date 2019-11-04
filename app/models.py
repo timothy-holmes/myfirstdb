@@ -93,21 +93,28 @@ class Audit(BaseModel):
                 if cvp_year_month:
                     order.cvp = True
                     if not cvp_year_month in cvp_month_groups.keys():
-                        cvp_month_groups[cvp_year_month] = {}
-                    if not order.model_code in cvp_month_groups[cvp_year_month].keys():
-                        cvp_month_groups[cvp_year_month][order.model_code] = {
+                        cvp_month_groups[cvp_year_month] = {"models": {}}
+                    if not order.model_code in cvp_month_groups[cvp_year_month]["models"].keys():
+                        cvp_month_groups[cvp_year_month]["models"][order.model_code] = {
                             "members": [],
                             "num_of_unreg": 0
                         }
-                    cvp_month_groups[cvp_year_month][order.model_code]["members"].append(order.suo)
-                    if order.rego_num is None: # the conditional expression I want: order.rego_num is None or "TBA" in order.rego_num
-                       cvp_month_groups[cvp_year_month][order.model_code]["num_of_unreg"] += 1
+                    cvp_month_groups[cvp_year_month]["models"][order.model_code]["members"].append(order.suo)
+                    if order.rego_num is None: # the conditional expression I want: order.rego_num is None or "TBA" in order.rego_num, doesn't work because of type error
+                       cvp_month_groups[cvp_year_month]["models"][order.model_code]["num_of_unreg"] += 1
                     elif "TBA" in order.rego_num:
-                       cvp_month_groups[cvp_year_month][order.model_code]["num_of_unreg"] += 1
+                       cvp_month_groups[cvp_year_month]["models"][order.model_code]["num_of_unreg"] += 1
+        for month in cvp_month_groups.keys(): # add vehicle summary to dict
+            cvp_month_groups[month]["num_of_models"] = len(cvp_month_groups[month]["models"])
+            cvp_month_groups[month]["num_of_vehicles"] = 0
+            for model,model_contents in cvp_month_groups[month]["models"].items():
+                num_of_vehicles = len(model_contents["members"])
+                cvp_month_groups[month]["num_of_vehicles"] += num_of_vehicles
         return cvp_month_groups
         
-    def selected_cvp_count(self):
-        return len([order for order in self.orders if (order.selected_for_cvp_audit)])
+    def selected_cvp_list(self):
+        return [order for order in self.orders if (order.selected_for_cvp)]
+
 
 class Dealer(BaseModel):
     __tablename__ = 'dealer'
@@ -119,7 +126,6 @@ class Dealer(BaseModel):
     def __repr__(self):
         return '<Dealer: {} {}>'.format(self.name, self.region)
 
-       
 class SalesOrder(BaseModel):
     __tablename__ = 'sales_order'
     id = db.Column(db.Integer, primary_key=True)
@@ -310,6 +316,21 @@ class Comment(BaseModel):
         c = Comment()
         parent.comments.append(c)
         return c  """
+        
+
+class MonthCVP(BaseModel):
+    __tablename__ = 'month_cvp'
+    id = db.Column(db.Integer, primary_key=True)
+    month_name = db.Column(db.String(7))
+    audit_id = db.Column(db.Integer, db.ForeignKey('audit.id'))
+    orders = db.relationship('SalesOrder', lazy='select')
+    
+
+class AssocMonthCVP(BaseModel):
+    __tablename__ = 'assoc_month_cvp'
+    id = db.Column(db.Integer, primary_key=True)
+    month_cvp_id = 
+
 
 @login.user_loader
 def load_user(id):
