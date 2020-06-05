@@ -5,7 +5,7 @@ blinker==1.4
 certifi==2019.6.16
 chardet==3.0.4
 Click==7.0
-Django==2.2.4
+Django==2.2.13
 dominate==2.4.0
 elasticsearch==7.0.2
 Flask==1.1.1
